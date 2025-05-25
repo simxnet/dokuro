@@ -37,8 +37,6 @@ export default class SpeechCommand extends Command {
 
     console.time("Speech");
 
-    const ext = attachment.contentType?.split("image/")[1];
-
     const attachmentBuffer = await ofetch<ArrayBuffer, "arrayBuffer">(
       attachment.proxyUrl,
       { responseType: "arrayBuffer" },
@@ -46,7 +44,7 @@ export default class SpeechCommand extends Command {
 
     const { data, info } = await this.renderSpeechBalloon(attachmentBuffer);
     const finalAttachment = new AttachmentBuilder()
-      .setName(`speech.${ext}`)
+      .setName("speech.gif")
       .setFile("buffer", data);
 
     console.timeEnd("Speech");
@@ -63,26 +61,27 @@ export default class SpeechCommand extends Command {
 
     const { height: speechHeight } = await speechImage.metadata();
 
+    const real = Math.floor(speechHeight / 2);
+
     const extendedBaseImage = baseImage.extend({
-      top: speechHeight,
+      top: real,
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     });
 
     const {
       width: imageWidth,
-      height: _imageHeight,
       format: imageFormat,
     } = await sharp(await extendedBaseImage.toBuffer()).metadata();
 
     const resizedSpeechImage = await speechImage
-      .resize(imageWidth, speechHeight, { fit: "fill" })
+      .resize(imageWidth, real, { fit: "fill" })
       .toBuffer();
 
     extendedBaseImage.composite([
       {
         input: resizedSpeechImage,
         gravity: "north",
-        tile: imageFormat === sharp.format.gif.id ? true : false,
+        tile: imageFormat === sharp.format.gif.id, // thanks g4 </3
       },
     ]);
 
