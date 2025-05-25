@@ -31,3 +31,6 @@ config.ts
 
 # typescript
 *.tsbuildinfo
+
+# seyfert
+commands.json

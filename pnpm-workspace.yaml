@@ -1,4 +1,4 @@
 ignoredBuiltDependencies:
-  - '@parcel/watcher'
+  - "@parcel/watcher"
 onlyBuiltDependencies:
   - sharp

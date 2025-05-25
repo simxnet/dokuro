@@ -1,31 +1,25 @@
 import { Client, ParseClient } from "seyfert";
-import { listen } from "listhen";
-import { createApp, toNodeListener } from "h3";
-import {
-  createIPX,
-  ipxFSStorage,
-  ipxHttpStorage,
-  createIPXH3Handler,
-} from "ipx";
+import { HandleCommand } from "seyfert/lib/commands/handle";
+import { Yuna } from "yunaforseyfert";
 
-const ipx = createIPX({
-  storage: ipxFSStorage(),
-  httpStorage: ipxHttpStorage({ domains: ["media.discordapp.net", "cdn.discordapp.com"] }),
-});
-
-const app = createApp().use("/", createIPXH3Handler(ipx));
+class DokuroHandleCommand extends HandleCommand {
+  argsParser = Yuna.parser();
+}
 
 const client = new Client({
   commands: {
-    prefix: () => ["*"]
-  }
+    prefix: () => ["*"],
+  },
 });
 
-// This will start the connection with the Discord gateway and load commands, events, components, and language (i18n)
-client.start().then(() => client.uploadCommands({ cachePath: './commands.json' }));;
+client.setServices({
+  handleCommand: DokuroHandleCommand,
+});
 
-listen(toNodeListener(app));
+client
+  .start()
+  .then(() => client.uploadCommands({ cachePath: "./commands.json" }));
 
-declare module 'seyfert' {
-  interface UsingClient extends ParseClient<Client<true>> { }
+declare module "seyfert" {
+  interface UsingClient extends ParseClient<Client<true>> {}
 }
