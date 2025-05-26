@@ -26,13 +26,14 @@ export async function evalImagescript(
     log: (arg: string) => (text += String(arg) + "\n"),
   };
 
-  let result: Image | GIF | undefined;
+  let result: Uint8Array | undefined;
   const scriptToExecute = `(async() => {
     ${script}
     const __typeofImage = typeof(image);
     if(__typeofImage === 'undefined') {
         return undefined;
     } else {
+        // Expecting image to be an already encoded Uint8Array
         return image;
     }
 })()`;
@@ -57,7 +58,7 @@ export async function evalImagescript(
 
   if (result === undefined && (!text || text.trim() === ""))
     throw new Error(
-      "the script produced no output (define `image` or log something with `console.log()`)",
+      "the script produced no output (define `image` as an encoded Uint8Array or log something with `console.log()`)",
     );
   if (result instanceof Promise) await result;
 
@@ -67,15 +68,11 @@ export async function evalImagescript(
     image: undefined,
     text,
     cpuTime: Date.now() - start,
-    format: result
-      ? result instanceof Image
-        ? Format.PNG
-        : Format.GIF
-      : undefined,
+    format: Format.PNG, 
   };
+  
   if (result) {
-    const buffer = await result.encode();
-    output.image = Buffer.from(buffer);
+    output.image = Buffer.from(result);
   }
 
   return output;
